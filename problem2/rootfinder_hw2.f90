@@ -49,6 +49,10 @@ MODULE solvers
                 abserr = HUGE(1.0d0)                
                 IF (f(xa) * f(xb) > 0.0) RETURN
 
+                OPEN(UNIT=25, FILE='bisect.dat', STATUS='REPLACE', FORM='FORMATTED')
+                WRITE(UNIT=25, *) 'root error iterations'
+                
+
                 DO WHILE (abserr > tolerr .and. iter < maxiter)
 
                         ! specify  xc_old = xc
@@ -79,7 +83,12 @@ MODULE solvers
 
                 ! Update iteration count here, makes better sense
                 iter = iter + 1
+
+                ! Write to bisect.dat
+                WRITE(UNIT=25, *)  xc, ' ', abserr, ' ', iter
+
                 ENDDO
+                CLOSE(25)
         END SUBROUTINE bisect
 
 
@@ -97,13 +106,21 @@ MODULE solvers
                 abserr = HUGE(1.0d0)
                 xs(0) = x0
                 iter = 0
+                
+                ! Open a new file to print current iterations
+                OPEN(UNIT = 25, FILE='newton.dat', STATUS='REPLACE',FORM='FORMATTED')
+                WRITE(25,*) 'root error iterations'
+
                 DO WHILE (abserr > tolerr .and. iter < maxiter)
                         xn = xs(iter)
                         xs(iter+1) = xn - f(xn) / fp(xn)
                         abserr = ABS((xs(iter+1) - xn) / xn)
                         iter = iter + 1
+                        ! Write current error stuff
+                        WRITE(25,*) xc, ' ', abserr, ' ', iter
                 ENDDO
                 xc = xs(iter)
+                CLOSE(25)
         END SUBROUTINE newton
 
 END MODULE solvers
